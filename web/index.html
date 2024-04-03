@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management</title>
+    <style>
+        html{
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body{
+            background-color: lightcyan;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            margin-bottom: 10px;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>File Management</h1>
+
+    <form id="uploadForm">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+
+    <form id="downloadForm">
+        <input type="text" name="filename" placeholder="file name">
+        <button type="submit">Download</button>
+    </form>
+
+    <form id="deleteForm">
+        <input type="text" name="filename" placeholder="file name">
+        <button type="submit">Delete</button>
+    </form>
+
+    <form id="renameForm">
+        <input type="text" name="oldname" placeholder="old file name">
+        <input type="text" name="newname" placeholder="new file name">
+        <button type="submit">Rename</button>
+    </form>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: new FormData(this)
+                });
+                document.getElementById('output').innerText = await response.text();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        document.getElementById('downloadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const filename = this.elements['filename'].value;
+
+            if (!filename) {
+                alert("Please provide a filename.");
+                return;
+            }
+
+            window.location.href = '/download?filename=' + encodeURIComponent(filename);
+        });
+
+        document.getElementById('deleteForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const filename = this.elements['filename'].value;
+
+            if (!filename) {
+                alert("Please provide a filename.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/delete/${filename}`, {
+                    method: 'DELETE'});
+
+                document.getElementById('output').innerText = await response.text();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        document.getElementById('renameForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const oldName = this.elements['oldname'].value;
+            const newName = this.elements['newname'].value;
+
+            if (!oldName) {
+                alert("Please provide the old name.");
+                return;
+            }
+
+            if (!newName) {
+                alert("Please provide the new name.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/rename', {
+                    method: 'PUT',
+                    body: new FormData(this)
+                });
+
+                document.getElementById('output').innerText = await response.text();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
